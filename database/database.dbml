@@ -1,0 +1,129 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table pacientes {
+  matricula varchar(12) [pk]
+  nombres varchar(30)
+  apellido varchar(30)
+  edad integer
+  ocupacion varchar
+  carrera integer
+  telefono varchar(12)
+  telefono_emergencia varchar(12)
+  ciclo_ingreso varchar
+  nss varchar(11)
+  created_at timestamp [default: "now()"]
+}
+
+Ref: pacientes.carrera > carreras.id_carrera
+
+Table usuarios {
+  id_empleado uuid [pk, note: 'Campo empleado para los usuarios con supabase'] 
+  matricula_empleado varchar(12) unique
+  rol rol 
+  nombres varchar(30)
+  apellido_paterno varchar(30)
+  apellido_materno varchar(30)
+  correo varchar(50)
+  password varchar(60)
+  telefono varchar(12)
+  unidad_academica integer 
+}
+
+Ref: usuarios.unidad_academica > unidad_academica.id_unidad
+
+Table expedientes {
+  matricula varchar(12) [pk]
+  nivel_riesgo riesgo
+  update_at timestamp [default: "now()"]
+}
+
+Table accesosUnidades {
+  expediente varchar(12) [pk]
+  unidad_academica integer [pk]
+}
+
+Ref: accesosUnidades.expediente > expedientes.matricula
+
+Ref: expedientes.matricula - pacientes.matricula 
+
+Table ficha_sesion {
+  id_ficha integer [pk, increment]
+  matricula varchar(12) [pk]
+  id_responsable varchar(12)
+  situacion_actual text
+  acciones_sesion text
+  id_problematica integer
+  nivel_riesgo riesgo
+  documento integer [default: null]
+  created_at timestamp [default: "now()"]
+}
+
+Ref: ficha_sesion.matricula > expedientes.matricula
+Ref: ficha_sesion.id_problematica > problematicas.id_problematica
+Ref: ficha_sesion.id_responsable > usuarios.matricula_empleado
+Ref: ficha_sesion.documento > documentos.id_documento
+
+Table ficha_canalizacion {
+  id_ficha integer [pk, increment]
+  matricula varchar(12) [pk]
+  id_responsable varchar(12)
+  motivo_canalizacoin text
+  documento integer [default: null]
+  created_at timestamp [default: "now()"]
+}
+
+Ref: ficha_canalizacion.matricula > expedientes.matricula
+Ref: ficha_canalizacion.documento > documentos.id_documento
+
+Table documentos {
+  id_documento integer [pk, increment]
+  ruta_documento varchar(30)
+  }
+
+Table problematicas {
+  id_problematica integer [pk, increment]
+  nombre_problematica varchar(90)
+}
+
+Table unidad_academica {
+  id_unidad integer [pk, increment]
+  nombre_unidad varchar(60)
+}
+
+Table carreras {
+  id_carrera integer [pk, increment]
+  id_unidad integer
+  nombre_carrera varchar(50)
+}
+
+Ref: carreras.id_unidad > unidad_academica.id_unidad
+
+Table solicitudes {
+ expediente varchar(12) [pk]
+ unidad_solicitante integer [pk]
+ estado estado_solicitud
+}
+
+Ref: solicitudes.expediente > expedientes.matricula
+Ref: solicitudes.unidad_solicitante > unidad_academica.id_unidad
+
+enum riesgo {
+    "nulo"
+    "leve"
+    "moderado"
+    "alto"
+    "inminente"
+    
+}
+
+enum rol {
+  "admin"
+  "psico"
+}
+ 
+enum estado_solicitud {
+  "pendiente"
+  "aceptada"
+  "rechazada"
+}
